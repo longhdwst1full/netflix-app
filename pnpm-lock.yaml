@@ -29,6 +29,9 @@ dependencies:
   '@prisma/client':
     specifier: ^4.10.1
     version: 4.10.1(prisma@4.10.1)
+  '@types/lodash':
+    specifier: ^4.14.195
+    version: 4.14.195
   '@types/node':
     specifier: 18.13.0
     version: 18.13.0

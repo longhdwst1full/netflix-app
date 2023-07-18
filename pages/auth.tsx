@@ -1,39 +1,43 @@
-import Input from "@/components/Input";
-import { useRouter } from "next/router";
+import axios from "axios";
 import { useCallback, useState } from "react";
+import { NextPageContext } from "next";
+import { getSession, signIn } from "next-auth/react";
+import { useRouter } from "next/router";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
-import { NextPageContext } from "next";
-import axios from "axios";
-import { signIn } from "next-auth/react";
-export async function getServerSideProps(context: NextPageContext) {
-  // const session = await getSessio(context);
 
-  // if (session) {
-  //   return {
-  //     redirect: {
-  //       destination: '/',
-  //       permanent: false,
-  //     }
-  //   }
-  // }
+import Input from "@/components/Input";
+
+export async function getServerSideProps(context: NextPageContext) {
+  const session = await getSession(context);
+
+  if (session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
 
   return {
     props: {},
   };
 }
 
-function Auth() {
+const Auth = () => {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
 
   const [variant, setVariant] = useState("login");
 
   const toggleVariant = useCallback(() => {
-    setVariant((current) => (current === "login" ? "register" : "login"));
+    setVariant((currentVariant) =>
+      currentVariant === "login" ? "register" : "login"
+    );
   }, []);
 
   const login = useCallback(async () => {
@@ -44,21 +48,26 @@ function Auth() {
         redirect: false,
         callbackUrl: "/",
       });
-      router.push("/");
+
+      router.push("/profiles");
     } catch (error) {
       console.log(error);
     }
   }, [email, password, router]);
+
   const register = useCallback(async () => {
     try {
-      await axios.post("/api/auth/register", {
+      await axios.post("/api/register", {
         email,
         name,
         password,
       });
+
       login();
-    } catch (error) {}
-  }, [email, login, name, password]);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [email, name, password, login]);
 
   return (
     <div className="relative h-full w-full bg-[url('/images/hero.jpg')] bg-no-repeat bg-center bg-fixed bg-cover">
@@ -104,13 +113,13 @@ function Auth() {
             </button>
             <div className="flex flex-row items-center gap-4 mt-8 justify-center">
               <div
-                onClick={() => signIn("google", { callbackUrl: "/" })}
+                onClick={() => signIn("google", { callbackUrl: "/profiles" })}
                 className="w-10 h-10 bg-white rounded-full flex items-center justify-center cursor-pointer hover:opacity-80 transition"
               >
                 <FcGoogle size={32} />
               </div>
               <div
-                onClick={() => signIn("github", { callbackUrl: "/" })}
+                onClick={() => signIn("github", { callbackUrl: "/profiles" })}
                 className="w-10 h-10 bg-white rounded-full flex items-center justify-center cursor-pointer hover:opacity-80 transition"
               >
                 <FaGithub size={32} />
@@ -133,6 +142,6 @@ function Auth() {
       </div>
     </div>
   );
-}
+};
 
 export default Auth;
